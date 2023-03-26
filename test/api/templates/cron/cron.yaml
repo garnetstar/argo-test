@@ -1,0 +1,28 @@
+{{- range $cronjob := $.Values.crons }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $.Release.Name }}-cron-job-{{ $cronjob.name }}
+spec:
+  schedule: {{ $cronjob.schedule | quote }}
+  concurrencyPolicy: "Replace"
+  successfulJobsHistoryLimit: 2 # default 3
+  failedJobsHistoryLimit: 1 # default 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            workload: cronjob
+        spec:
+          containers:
+          - name: gps-api-{{ $cronjob.name }}
+            image: busybox:1.28
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - {{ $cronjob.command }}
+          restartPolicy: OnFailure
+{{- end }}

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-gps-api
+  labels:
+{{ include "common.labels" . | indent 4 }}
+spec:
+  selector:
+    app: {{ .Release.Name }}-gps-api
+  ports:
+    - protocol: TCP
+      port: 8877
+      targetPort: 8877
+      # nodePort: 30000 # Uncomment for external service

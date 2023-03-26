@@ -1,0 +1,9 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pdb-{{ .Release.Name }}-gps-api
+spec:
+  minAvailable: 3
+  selector:
+    matchLabels: 
+      app: {{ .Release.Name }}-gps-api

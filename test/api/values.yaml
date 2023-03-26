@@ -1,0 +1,53 @@
+postgresql:
+  commonLabels:
+    testlabel: sssss
+  primary:
+    persistence:
+      enabled: false
+    # affinity:
+    #   nodeAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       nodeSelectorTerms:
+    #         - matchExpressions:
+    #             - key: agentpool
+    #               operator: In
+    #               values:
+    #                 - common
+    #   podAntiAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - podAffinityTerm:
+    #         labelSelector:
+    #           matchExpressions:
+    #             - key: "app.kubernetes.io/name"
+    #               operator: In
+    #               values:
+    #                 - postgresql
+    #         topologyKey: kubernetes.io/hostname
+crons:
+  # - name: job-1
+  #   command: "date; echo Hello from the Kubernetes cluster"
+  #   schedule: "* * * * *"
+  # - name: job-2
+  #   command: "date; echo Hello from the Kubernetes cluster"
+  #   schedule: "*/2 * * * *"
+  # - name: job-3
+  #   command: "date; echo Hello from the Kubernetes cluster"
+  #   schedule: "*/3 * * * *"
+
+sleepyTime: 2
+
+otel:
+  collector:
+    url: "otel.otel-agent.svc.cluster.local"
+    port: 4317
+
+global:
+  postgresql:
+    auth:
+      username: "my_db"
+      database: "my_db"
+      password: "test"
+      # postgresPassword: "test" # only if default "postgres" database and user is used
+
+smartform:
+  password: "i2RK3uJR"

@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-gps-api
+  labels:
+    app: {{ .Release.Name }}-gps-api
+{{ include "common.labels" . | indent 4 }}  
+spec:
+  replicas: {{ .Values.apiReplicas }}
+  selector: 
+    matchLabels: 
+      app: {{ .Release.Name }}-gps-api 
+  template: 
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-gps-api
+        testlabel: ssssss
+{{ include "common.labels" . | indent 8 }}    
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      # hostNetwork: true
+      containers:
+        - name: kosik-gps
+          image: kosikdevopstestacr.azurecr.io/kosik-gps:k8s-poc-1.5
+          env:
+          - name: SMART_FORM__PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-smartform
+                key: password 
+          - name: POSTGRES__HOST
+            value: {{ .Release.Name }}-postgresql
+          - name: POSTGRES__PORT
+            value: "5432"
+          - name: POSTGRES__DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-postgres
+                key: database
+          - name: POSTGRES__USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-postgres
+                key: user
+          - name: POSTGRES__PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-postgres
+                key: password
+          - name: WEB__PORT
+            value: "8877"
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: "http://{{ .Values.otel.collector.url }}:{{ .Values.otel.collector.port }}"
+          - name: OTEL_TRACES_EXPORTER
+            value: otlp
+          - name: OTEL_JAVAAGENT_DEBUG
+            value: "false"
+          - name: OTEL_SERVICE_NAME
+            value: {{ .Release.Name }}
+          - name: OTEL_METRICS_EXPORTER
+            value: "none"
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+            limits:
+              cpu: 800m
+              memory: 500Mi
+          ports:
+            - containerPort: 8877
+              name: http
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 2
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+            httpGet:
+              host:
+              scheme: HTTP
+              path: /dbcheck
+              port: 8877
+          livenessProbe:
+            initialDelaySeconds: 9
+            periodSeconds: 2
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 10
+            httpGet:
+              host:
+              scheme: HTTP
+              path: /deathlockcheck
+              port: 8877              
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: agentpool
+      #           operator: In
+      #           values:
+      #           - common 
+      #   podAntiAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       - podAffinityTerm:
+      #         labelSelector:
+      #           matchExpressions:
+      #           - key: app
+      #             operator: In
+      #             values:
+      #             - {{ .Release.Name }}-gps-api
+      #         topologyKey: kubernetes.io/hostname
+      # topologySpreadConstraints:
+      #   - maxSkew: 1
+      #     topologyKey: "topology.kubernetes.io/zone"
+      #     whenUnsatisfiable: DoNotSchedule
