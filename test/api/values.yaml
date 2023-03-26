@@ -51,4 +51,4 @@ global:
 
 smartform:
   password: "i2RK3uJR"
-apiReplicas: 3
+apiReplicas: 1
