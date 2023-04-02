@@ -1,0 +1,20 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: jaeger
+  # namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    name: jaeger-badger
+  ports:
+  - name: jaeger-tcp
+    port: 14250
+    targetPort: 14250
+  - name: badger
+    port: 16686
+    targetPort: 16686
+  - name: http
+    port: 14268
+    targetPort: 14268
+
+    

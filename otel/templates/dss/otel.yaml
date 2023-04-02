@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: otel-agent
+  # namespace: {{ .Values.namespace }}
+  labels:
+    k8s-app: fluentd-logging
+{{ include "common.labels" . | indent 4 }}   
+spec:
+  selector:
+    matchLabels:
+      name: otel-agent
+  template:
+    metadata:
+      labels:
+        name: otel-agent
+{{ include "common.labels" . | indent 8 }}           
+      annotations: 
+        checksum/config: {{ include (print $.Template.BasePath "/cms/otel.yaml") . | sha256sum }}
+    spec:
+      containers:
+      - command:
+          - "/otelcol-contrib"
+          - "--config=/conf/otel-agent-config.yaml"
+        image: otel/opentelemetry-collector-contrib:0.70.0
+        name: otel-agent
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        ports:
+        - containerPort: 4317
+          hostPort: 4317
+        - containerPort: 4318
+          hostPort: 4318
+        volumeMounts:
+        - name: otel-agent-config-vol
+          mountPath: /conf
+      volumes:
+        - configMap:
+            name: otel-agent-conf
+            items:
+              - key: otel-agent-config
+                path: otel-agent-config.yaml
+          name: otel-agent-config-vol
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: agentpool
+      #           operator: In
+      #           values:
+      #           - common 

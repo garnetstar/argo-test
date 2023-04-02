@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+  # namespace: {{ .Values.namespace }}
+  labels:
+    k8s-app: fluentd-logging
+{{ include "common.labels" . | indent 4 }}       
+spec:
+  selector:
+    matchLabels:
+      name: jaeger-badger
+  template:
+    metadata:
+      labels:
+        name: jaeger-badger
+{{ include "common.labels" . | indent 8 }}           
+    spec:
+      containers:
+      - name: jaeger-all-in-one
+        image: jaegertracing/all-in-one:1.41
+        ports:
+          - containerPort: 14250
+            hostPort: 14250
+          - containerPort: 16686
+            hostPort: 16686         
+          - containerPort: 14268
+            hostPort: 14268       
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: agentpool
+      #           operator: In
+      #           values:
+      #           - common 
