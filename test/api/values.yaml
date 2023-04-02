@@ -1,6 +1,4 @@
 postgresql:
-  commonLabels:
-    testlabel: sssss
   primary:
     persistence:
       enabled: false
@@ -38,17 +36,16 @@ sleepyTime: 2
 
 otel:
   collector:
-    url: "otel.otel-agent.svc.cluster.local"
+    url: ""
     port: 4317
 
 global:
   postgresql:
     auth:
-      username: "my_db"
-      database: "my_db"
-      password: "test"
-      # postgresPassword: "test" # only if default "postgres" database and user is used
+      username: "XXX"
+      database: "XXX"
+      password: "XXX"
 
 smartform:
-  password: "i2RK3uJR"
+  password: "XXX"
 apiReplicas: 1
